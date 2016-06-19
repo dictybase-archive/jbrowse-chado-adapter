@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,11 +11,13 @@ import (
 	"github.com/dictybase/jbrowse-chado-adapter/middlewares"
 	"github.com/dictybase/jbrowse-chado-adapter/query"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/nleof/goyesql"
 	"github.com/rs/cors"
 	"golang.org/x/net/context"
 	"gopkg.in/codegangsta/cli.v1"
+	"gopkg.in/unrolled/render.v1"
 )
 
 // Runs the http server
@@ -55,7 +56,8 @@ func RunServer(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	jb := &handlers.Jbrowse{dbh, sf}
+	// with renderer
+	jb := &handlers.Jbrowse{dbh, sf, render.New()}
 	r := mux.NewRouter()
 	sgChain := apollo.New(
 		apollo.Wrap(cors.Handler),
@@ -84,9 +86,9 @@ func getSqlResource(c *cli.Context) (goyesql.Queries, error) {
 	return sf, err
 }
 
-func getDbHandler(c *cli.Context) (*sql.DB, error) {
+func getDbHandler(c *cli.Context) (*sqlx.DB, error) {
 	connString := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable",
 		c.String("user"), c.String("password"),
 		c.String("database"), c.String("host"))
-	return sql.Open("postgres", connString)
+	return sqlx.Connect("postgres", connString)
 }
