@@ -42,16 +42,32 @@ func main() {
 			Usage: "server port",
 			Value: 9998,
 		},
+		cli.StringFlag{
+			Name:  "sql-file",
+			Usage: "Text file with sql queries, default is bundled with the package",
+		},
 	}
+	app.Before = commands.ValidateDbArg
 	app.Commands = []cli.Command{
 		{
 			Name:   "run",
 			Usage:  "runs the jbrowse backend server",
 			Action: commands.RunServer,
+		},
+		{
+			Name:   "bootstrap-conf",
+			Usage:  "Generates and saves a new jbrowse_conf.json configuration in the postgresql database",
+			Action: commands.CreateConf,
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:  "sql-file",
-					Usage: "Text file with sql queries, default is bundled with the package",
+					Name:  "data-root",
+					Usage: "jbrowse data directory",
+					Value: "data",
+				},
+				cli.StringFlag{
+					Name:  "genome-root",
+					Usage: "The url path prepended for genome dataset for looking up of individual trackList.json",
+					Value: "genome",
 				},
 			},
 		},
