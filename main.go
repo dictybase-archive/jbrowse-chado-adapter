@@ -69,6 +69,11 @@ func main() {
 					Usage: "The url path prepended for genome dataset for looking up of individual trackList.json",
 					Value: "genome",
 				},
+				cli.StringFlag{
+					Name:  "name",
+					Usage: "A unique short name of this jbrowse project",
+					Value: "dictybase",
+				},
 			},
 		},
 	}

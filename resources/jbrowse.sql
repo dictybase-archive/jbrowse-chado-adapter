@@ -190,3 +190,14 @@ AND
 feat.name LIKE $3
 AND
 floc.srcfeature_id IS NOT NULL
+
+-- name: get-organism-with-features
+WITH ogroup AS (
+  SELECT COUNT(feat.feature_id) featcount, feat.organism_id
+    FROM feature feat
+  GROUP BY feat.organism_id
+  )
+SELECT organism.genus, organism.species, organism.organism_id
+FROM organism
+JOIN featgroup
+ON organism.organism_id = featgroup.organism_id
