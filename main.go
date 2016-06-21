@@ -55,7 +55,7 @@ func main() {
 			Action: commands.RunServer,
 		},
 		{
-			Name:   "bootstrap-conf",
+			Name:   "bootstrap-config",
 			Usage:  "Generates and saves a new jbrowse_conf.json configuration in the postgresql database",
 			Action: commands.CreateConf,
 			Flags: []cli.Flag{
@@ -74,6 +74,23 @@ func main() {
 					Usage: "A unique short name of this jbrowse project",
 					Value: "dictybase",
 				},
+			},
+		},
+		{
+			Name:   "bootstrap-tracks",
+			Usage:  "Generates and saves a new trackList.json configuration for every genome in the postgresql database",
+			Action: commands.CreateTracksConf,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "name",
+					Usage: "A unique short name of this jbrowse project",
+					Value: "dictybase",
+				},
+				cli.StringFlag{
+					Name: "base-api",
+					Usage: "Base url for the jbrowse api server",
+					Value: "http://localhost:9895/genomes",
+				}
 			},
 		},
 	}

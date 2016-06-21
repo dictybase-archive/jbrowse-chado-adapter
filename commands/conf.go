@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/dictybase/jbrowse-chado-adapter/model"
+	"gopkg.in/codegangsta/cli.v1"
 )
-import "gopkg.in/codegangsta/cli.v1"
 
 // Generates and save a new jbrowse_conf.json configuration
 // in the postgresql database.

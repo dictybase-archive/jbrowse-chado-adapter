@@ -69,7 +69,7 @@ func RunServer(c *cli.Context) error {
 func getSqlResource(c *cli.Context) (goyesql.Queries, error) {
 	var sf goyesql.Queries
 	if c.IsSet("sql-file") {
-		sf, err := goyesql.ParseFile(c.String("sql-file"))
+		sf, err := goyesql.ParseFile(c.GlobalString("sql-file"))
 		return sf, err
 	}
 	b, err := query.Asset("resources/jbrowse.sql")
