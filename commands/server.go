@@ -22,12 +22,6 @@ import (
 
 // Runs the http server
 func RunServer(c *cli.Context) error {
-	for _, p := range []string{"user", "password", "host", "database"} {
-		if !c.IsSet(p) {
-			return fmt.Errorf("argument %s is REQUIRED ", p)
-		}
-	}
-
 	var logMw *middlewares.Logger
 	if c.IsSet("log") {
 		w, err := os.Create(c.String("log"))
