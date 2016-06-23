@@ -201,3 +201,75 @@ SELECT organism.genus, organism.species, organism.organism_id
 FROM organism
 JOIN featgroup
 ON organism.organism_id = featgroup.organism_id
+
+-- name: get-jbrowse-dataset-ids
+SELECT jsonb_object_keys( 
+        jsonb_extract_path(
+            jbrowse.configuration,"general"
+        ) 
+    ) id
+FROM jbrowse 
+WHERE jbrowse.name = $1
+
+-- name: get-each-jbrowse-dataset
+SELECT jsonb_extract_path_text(
+        jbrowse.configuration, "general", $2
+    ), jbrowse.jbrowse_id
+FROM jbrowse
+WHERE jbrowse.name = $1
+
+-- name: insert-jbrowse-organism
+INSERT INTO jbrowse_organism(organism_id, jbrowse_id, dataset)
+VALUES ($1, $2, $3) RETURNING jbrowse_organism_id
+
+-- name: insert-jbrowse-track
+INSERT INTO jbrowse_track(configuration, jbrowse_organism_id)
+VALUES ($1, $2);
+
+-- name: insert-jbrowse-track-with-type
+INSERT INTO jbrowse_track(configuration, type_id, jbrowse_organism_id)
+VALUES ($1, $2, $3);
+
+-- name: feature-exists
+SELECT COUNT(feat.feature_id) FROM feat
+JOIN cvterm
+ON feat.type_id = cvterm.cvterm_id
+JOIN cv
+ON cvterm.cv_id = cv.cv_id
+WHERE
+feat.organism_id = $1
+AND
+cvterm.name = $2
+AND 
+cv.name = 'sequence'
+
+-- name: feature-with-subfeat-exist
+SELECT COUNT(feat.feature_id) FROM feat
+JOIN cvterm ftype
+ON feat.type_id = ftype.cvterm_id
+JOIN cv scv
+ON ftype.cv_id = scv.cv_id
+JOIN feature_relationship frel
+ON feat.feature_id = frel.object_id
+JOIN feature subfeat
+ON frel.subject_id = subfeat.feature_id
+JOIN cvterm rtype
+ON frel.type_id = rtype.cvterm_id
+JOIN cv rcv
+ON rtype.cv_id = rcv.cv_id
+JOIN cvterm subftype
+ON subfeat.type_id = subftype.cvterm_id
+JOIN cv subfcv
+ON subftype.cv_id = subfcv.cv_id
+WHERE
+feat.organism_id = $1
+AND
+ftype.name = $2
+AND
+subftype.name = $3
+AND 
+scv.name = 'sequence'
+AND
+rcv.name = 'ro'
+AND
+subfcv.name = 'sequence'
