@@ -68,7 +68,7 @@ func CreateConf(c *cli.Context) error {
 		return err
 	}
 	defer tx.Rollback()
-	_, err = tx.Exec("INSERT INTO jbrowse(name, configuration) VALUES (?, ?)", c.String("name"), str)
+	_, err = tx.Exec("INSERT INTO jbrowse(name, configuration) VALUES (?, ?)", c.String("name"), string(str))
 	if err != nil {
 		return err
 	}
