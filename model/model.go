@@ -6,3 +6,13 @@ type Organism struct {
 	Species    string
 	Genus      string
 }
+
+type DatasetKey struct {
+	Id string
+}
+
+type Dataset struct {
+	Url       string
+	Name      string
+	JbrowseId int
+}
