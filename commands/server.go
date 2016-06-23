@@ -20,6 +20,14 @@ import (
 	"gopkg.in/unrolled/render.v1"
 )
 
+type Params struct {
+	Router *mux.Router
+	Dbh    *sqlx.DB
+	Query  goyesql.Queries
+	Logger *middlewares.Logger
+	Cors   *cors.Cors
+}
+
 // Runs the http server
 func RunServer(c *cli.Context) error {
 	var logMw *middlewares.Logger
@@ -50,9 +58,15 @@ func RunServer(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	//   Track level configurations
+	//      /configurations/{name}/{dataset_id}/tracks [GET and POST]
+	//      /configurations/{name}/{dataset_id}/tracks/{track_id} [GET, PATCH AND DELETE ]
+
 	// with renderer
 	jb := &handlers.Jbrowse{dbh, sf, render.New()}
 	r := mux.NewRouter()
+	p := &Params{r, dbh, sf, logMw, cors}
+	setConfigRoutes(p)
 	sgChain := apollo.New(
 		apollo.Wrap(cors.Handler),
 		apollo.Wrap(logMw.LoggerMiddleware)).
@@ -85,4 +99,41 @@ func getDbHandler(c *cli.Context) (*sqlx.DB, error) {
 		c.String("user"), c.String("password"),
 		c.String("database"), c.String("host"))
 	return sqlx.Connect("postgres", connString)
+}
+
+// Sets up all routes for managing jbrowse_conf.json
+//		/configurations [GET and POST]
+//		/configurations/{name} [GET, PATCH and DELETE]
+func setConfigRoutes(p *Params) {
+	r := p.Router
+	dbh := p.Dbh
+	sf := p.Query
+	logMw := p.Logger
+	cors := p.Cors
+
+	h := &handlers.JbConfig{dbh, sf, render.New()}
+	pChain := apollo.New(
+		apollo.Wrap(cors.Handler),
+		apollo.Wrap(logMw.LoggerMiddleware)).
+		With(context.Background()).
+		ThenFunc(h.CreateHandler)
+	gChain := apollo.New(
+		apollo.Wrap(cors.Handler),
+		apollo.Wrap(logMw.LoggerMiddleware)).
+		With(context.Background()).
+		ThenFunc(h.GetNamedHandler)
+	paChain := apollo.New(
+		apollo.Wrap(cors.Handler),
+		apollo.Wrap(logMw.LoggerMiddleware)).
+		With(context.Background()).
+		ThenFunc(h.UpdateNamedHandler)
+	dChain := apollo.New(
+		apollo.Wrap(cors.Handler),
+		apollo.Wrap(logMw.LoggerMiddleware)).
+		With(context.Background()).
+		ThenFunc(h.DeleteNamedHandler)
+	r.Handle("/configurations", pChain).Methods("POST")
+	r.Handle("/configurations/{name}", gChain).Methods("GET")
+	r.Handle("/configurations/{name}", paChain).Methods("PATCH")
+	r.Handle("/configurations/{name}", dChain).Methods("DELETE")
 }
