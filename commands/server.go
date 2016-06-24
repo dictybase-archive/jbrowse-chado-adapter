@@ -114,6 +114,7 @@ func setConfigRoutes(p *Params) {
 	h := &handlers.JbConfig{dbh, sf, render.New()}
 	pChain := apollo.New(
 		apollo.Wrap(cors.Handler),
+		apollo.Wrap(middlewares.ValidateJsonHeader),
 		apollo.Wrap(logMw.LoggerMiddleware)).
 		With(context.Background()).
 		ThenFunc(h.CreateHandler)
@@ -124,6 +125,7 @@ func setConfigRoutes(p *Params) {
 		ThenFunc(h.GetNamedHandler)
 	paChain := apollo.New(
 		apollo.Wrap(cors.Handler),
+		apollo.Wrap(middlewares.ValidateJsonHeader),
 		apollo.Wrap(logMw.LoggerMiddleware)).
 		With(context.Background()).
 		ThenFunc(h.UpdateNamedHandler)
