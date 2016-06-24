@@ -202,6 +202,9 @@ FROM organism
 JOIN featgroup
 ON organism.organism_id = featgroup.organism_id
 
+-- name: jbrowse-name-exists
+SELECT jbrowse_id FROM jbrowse WHERE name = $1
+
 -- name: get-jbrowse-dataset-ids
 SELECT jsonb_object_keys( 
         jsonb_extract_path(
@@ -217,6 +220,10 @@ SELECT jsonb_extract_path_text(
     ), jbrowse.jbrowse_id
 FROM jbrowse
 WHERE jbrowse.name = $1
+
+-- name: insert-jbrowse
+INSERT INTO jbrowse(name, config)
+VALUES ($1, $2) RETURNING jbrowse_id;
 
 -- name: insert-jbrowse-organism
 INSERT INTO jbrowse_organism(organism_id, jbrowse_id, dataset)
